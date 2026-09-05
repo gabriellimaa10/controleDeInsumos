@@ -17,7 +17,35 @@ Basta abrir `index.html` em qualquer navegador — não precisa de servidor nem 
 
 ### Persistência dos registros
 
-A página tenta usar o banco de dados embutido do Claude Artifacts (quando publicada como Artifact) para compartilhar registros entre quem acessa a página. Se essa camada não estiver disponível (por exemplo, ao abrir o arquivo direto do GitHub/local), ela cai automaticamente para `localStorage` do navegador — os registros ficam salvos só naquele navegador/computador.
+A página escolhe onde salvar os registros nesta ordem, na primeira que funcionar:
+
+1. **API própria (`backend/`, Node/Express + MongoDB)** — se você configurar a URL da API no campo "URL da API própria" (na seção "Histórico de registros"), os registros ficam num banco MongoDB de verdade, compartilhado entre qualquer pessoa que acesse com a mesma URL configurada.
+2. **Banco embutido do Claude Artifacts** — quando a página é publicada como Artifact (claude.ai), sem precisar configurar nada.
+3. **`localStorage` do navegador** — se nenhuma das opções acima estiver disponível (por exemplo, abrindo o `index.html` direto do GitHub/local sem configurar a API), os registros ficam salvos só naquele navegador/computador.
+
+A linha de status logo abaixo do botão "Salvar registro atual" sempre diz qual dessas três opções está ativa.
+
+### Backend (API + MongoDB)
+
+O código do backend fica em `backend/` — uma API Node/Express pequena, com Mongoose, para persistir os registros num MongoDB de verdade (por exemplo, um cluster gratuito do [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)).
+
+```bash
+cd backend
+npm install
+cp .env.example .env     # edite o .env com a sua connection string do MongoDB
+npm start                # sobe em http://localhost:3001
+```
+
+Endpoints:
+
+| Método | Rota                 | O que faz                          |
+|--------|----------------------|-------------------------------------|
+| GET    | `/api/health`         | checagem simples (e se o Mongo está conectado) |
+| GET    | `/api/registros`      | lista os registros, mais recentes primeiro |
+| POST   | `/api/registros`      | cria um registro (`label`, `savedAt`, `input`, `result`) |
+| DELETE | `/api/registros/:id`  | exclui um registro |
+
+Depois de rodar a API (local ou hospedada em algum serviço gratuito como Render, Railway ou Fly.io), abra o `index.html`, cole a URL da API no campo "URL da API própria" e clique em "Conectar" — a partir daí o app passa a ler e gravar direto no MongoDB.
 
 ### Aviso
 

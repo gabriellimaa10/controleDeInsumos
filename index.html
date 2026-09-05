@@ -1,3 +1,8 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Dose Certa de Dejetos</title>
 <meta name="description" content="Calculadora de dosagem de dejetos bovinos como adubo a partir do laudo de solo, cultura e declividade da área.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -204,7 +209,11 @@
   .btn:hover{ background:var(--accent-strong); }
   .btn:disabled{ opacity:.45; cursor:not-allowed; }
   .btn:focus-visible{ outline:2px solid var(--focus); outline-offset:2px; }
-  .db-status{ font-size:11.5px; color:var(--ink-faint); margin:2px 0 14px; }
+  .btn-ghost{ background:transparent; border:1px solid var(--border); color:var(--ink-soft); }
+  .btn-ghost:hover{ background:var(--surface-2); color:var(--ink); }
+  .db-status{ font-size:11.5px; color:var(--ink-faint); margin:2px 0 10px; }
+  .api-row{ display:flex; gap:10px; align-items:flex-end; margin-bottom:14px; }
+  .api-row .field{ flex:1; }
 
   .hist-row{
     display:grid; grid-template-columns:18px 1fr auto auto auto auto; gap:12px; align-items:center;
@@ -253,6 +262,9 @@
   }
   footer.foot b{ color:var(--ink-soft); }
 </style>
+</head>
+<body>
+
 
 <div class="wrap">
 
@@ -467,6 +479,13 @@
       <button class="btn" id="btnSave" disabled>💾 Salvar registro atual</button>
     </div>
     <p class="db-status" id="dbStatus">Verificando armazenamento…</p>
+    <div class="api-row">
+      <div class="field">
+        <label for="apiBaseInput">URL da API própria (opcional — MongoDB via backend)</label>
+        <input type="text" id="apiBaseInput" placeholder="ex.: https://sua-api.onrender.com">
+      </div>
+      <button class="btn btn-ghost" id="apiBaseBtn" type="button">Conectar</button>
+    </div>
     <div id="historyList"></div>
     <p class="hist-hint">Os 3 registros mais recentes já entram no dashboard comparativo abaixo automaticamente — marque ou desmarque linhas para trocar quem aparece (dá para colocar quantos períodos ou talhões quiser lado a lado).</p>
   </div>
@@ -565,6 +584,18 @@
   var selectedIds = [];
   var useLocal = false;
   var STORAGE_KEY = "doseCertaDejetos.registros.v1";
+  var API_BASE_KEY = "doseCertaDejetos.apiBase";
+  var mode = null; // "api" | "db" | "local"
+  var apiBase = "";
+
+  function getStoredApiBase(){
+    try{ return (localStorage.getItem(API_BASE_KEY) || "").trim(); }
+    catch(e){ return ""; }
+  }
+  function setStoredApiBase(v){
+    try{ localStorage.setItem(API_BASE_KEY, v); }
+    catch(e){}
+  }
 
   function loadLocalRecords(){
     try{
@@ -839,7 +870,11 @@
         var id = btn.getAttribute('data-id');
         var pos = selectedIds.indexOf(id);
         if(pos !== -1) selectedIds.splice(pos,1);
-        if(recordsCol){
+        if(mode === "api"){
+          fetchWithTimeout(apiUrl(apiBase, "/api/registros/" + id), { method: "DELETE" }, 6000)
+            .then(function(r){ if(!r.ok && r.status !== 204) throw new Error("delete failed"); return refreshFromApi(); })
+            .catch(function(){ setDbStatus("Não foi possível excluir na API agora — tente de novo."); });
+        } else if(recordsCol){
           recordsCol.doc(id).delete().catch(function(){
             setDbStatus('Não foi possível excluir este registro agora — tente de novo.');
           });
@@ -1039,6 +1074,30 @@
       result: lastResult
     };
 
+    if(mode === "api"){
+      btn.disabled = true;
+      var prevLabelApi = btn.textContent;
+      btn.textContent = "Salvando…";
+      fetchWithTimeout(apiUrl(apiBase, "/api/registros"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      }, 6000).then(function(r){
+        if(!r.ok) throw new Error("save failed");
+        return r.json();
+      }).then(function(){
+        $("labelInput").value = "";
+        setDbStatus("Registro salvo na API (" + apiBase + ").");
+        return refreshFromApi();
+      }).catch(function(){
+        setDbStatus("Não foi possível salvar na API agora — verifique se ela está no ar.");
+      }).then(function(){
+        btn.disabled = false;
+        btn.textContent = prevLabelApi;
+      });
+      return;
+    }
+
     if(recordsCol){
       btn.disabled = true;
       var prevLabel = btn.textContent;
@@ -1073,6 +1132,7 @@
   }
 
   function fallbackToLocal(message){
+    mode = "local";
     useLocal = true;
     recordsCol = null;
     records = loadLocalRecords();
@@ -1081,7 +1141,9 @@
     renderHistory();
   }
 
-  function initHistory(){
+  // banco de dados embutido do Claude Artifacts (quando publicado como Artifact),
+  // com fallback para o armazenamento do navegador
+  function connectClaudeOrLocal(){
     if(!(window.claude && typeof window.claude.use === "function")){
       fallbackToLocal("Este visualizador não expõe o banco de dados do artefato.");
       return;
@@ -1091,6 +1153,7 @@
         fallbackToLocal("O banco de dados compartilhado não está disponível aqui.");
         return;
       }
+      mode = "db";
       recordsCol = db.collection("registros");
       $("btnSave").disabled = false;
       setDbStatus("Registros ficam salvos nesta página e visíveis a quem tiver acesso a ela.");
@@ -1109,7 +1172,54 @@
     });
   }
 
+  // ---- backend próprio (Node/Express + MongoDB), quando configurado ----
+
+  function apiUrl(base, path){ return base.replace(/\/+$/, "") + path; }
+
+  function fetchWithTimeout(url, opts, ms){
+    var ctrl = (typeof AbortController !== "undefined") ? new AbortController() : null;
+    var merged = Object.assign({}, opts || {});
+    if(ctrl) merged.signal = ctrl.signal;
+    var t = ctrl ? setTimeout(function(){ ctrl.abort(); }, ms || 4000) : null;
+    return fetch(url, merged).then(function(r){ if(t) clearTimeout(t); return r; }, function(err){ if(t) clearTimeout(t); throw err; });
+  }
+
+  function refreshFromApi(){
+    return fetchWithTimeout(apiUrl(apiBase, "/api/registros"), {}, 6000)
+      .then(function(r){ if(!r.ok) throw new Error("list failed"); return r.json(); })
+      .then(function(list){ records = Array.isArray(list) ? list : []; renderHistory(); })
+      .catch(function(){ setDbStatus("Conectado à API, mas não consegui carregar os registros agora."); });
+  }
+
+  function connectPersistence(){
+    mode = null; recordsCol = null; useLocal = false;
+    apiBase = getStoredApiBase();
+    $("apiBaseInput").value = apiBase;
+
+    if(apiBase){
+      setDbStatus("Conectando à API em " + apiBase + "…");
+      fetchWithTimeout(apiUrl(apiBase, "/api/health"), {}, 4000).then(function(r){
+        if(!r.ok) throw new Error("health check failed");
+        return r.json();
+      }).then(function(){
+        mode = "api";
+        $("btnSave").disabled = false;
+        setDbStatus("Conectado à API própria (MongoDB) em " + apiBase + ".");
+        return refreshFromApi();
+      }).catch(function(){
+        setDbStatus("Não consegui falar com a API em " + apiBase + " — verifique se ela está no ar. Usando outra opção de salvamento…");
+        connectClaudeOrLocal();
+      });
+      return;
+    }
+    connectClaudeOrLocal();
+  }
+
   $("btnSave").addEventListener("click", saveRecord);
+  $("apiBaseBtn").addEventListener("click", function(){
+    setStoredApiBase($("apiBaseInput").value.trim());
+    connectPersistence();
+  });
 
   ["pSolo","textura","dataLaudo","distAgua","cultura","area","declive","teorP2O5","disponivel"].forEach(function(id){
     document.getElementById(id).addEventListener('input', recalc);
@@ -1119,6 +1229,9 @@
   updateManureUI();
   recalc();
   try { renderHistory(); } catch(e){ if(window.console) console.error(e); }
-  initHistory();
+  connectPersistence();
 })();
 </script>
+
+</body>
+</html>
