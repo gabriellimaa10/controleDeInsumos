@@ -1,0 +1,1124 @@
+<title>Dose Certa de Dejetos</title>
+<meta name="description" content="Calculadora de dosagem de dejetos bovinos como adubo a partir do laudo de solo, cultura e declividade da área.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F2E6;
+    --surface:#FFFDF8;
+    --surface-2:#EEE7D3;
+    --border:#DCD2B7;
+    --border-soft:#E7DFC7;
+    --ink:#26301E;
+    --ink-soft:#616B51;
+    --ink-faint:#8C9478;
+    --accent:#4B7A33;
+    --accent-strong:#33511F;
+    --accent-wash:#E4EDD8;
+    --brown:#93613A;
+    --brown-wash:#F1E3D4;
+    --good:#2E7D46;
+    --good-wash:#DEEEDF;
+    --warn:#A9700F;
+    --warn-wash:#F5E8CE;
+    --danger:#AE3A2C;
+    --danger-wash:#F6DFDA;
+    --focus:#33511F;
+    --shadow: 0 1px 2px rgba(38,48,30,.06), 0 8px 24px -12px rgba(38,48,30,.18);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#151A11;
+      --surface:#1D2417;
+      --surface-2:#242C1B;
+      --border:#37432A;
+      --border-soft:#2C3521;
+      --ink:#ECEFE3;
+      --ink-soft:#AEB79C;
+      --ink-faint:#7C8569;
+      --accent:#8FCB5C;
+      --accent-strong:#B7E28C;
+      --accent-wash:#25341C;
+      --brown:#D19A69;
+      --brown-wash:#33291E;
+      --good:#63CC7F;
+      --good-wash:#1E3320;
+      --warn:#E2A83F;
+      --warn-wash:#372B14;
+      --danger:#E67667;
+      --danger-wash:#3A1E1A;
+      --focus:#B7E28C;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 32px -14px rgba(0,0,0,.55);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#151A11;
+    --surface:#1D2417;
+    --surface-2:#242C1B;
+    --border:#37432A;
+    --border-soft:#2C3521;
+    --ink:#ECEFE3;
+    --ink-soft:#AEB79C;
+    --ink-faint:#7C8569;
+    --accent:#8FCB5C;
+    --accent-strong:#B7E28C;
+    --accent-wash:#25341C;
+    --brown:#D19A69;
+    --brown-wash:#33291E;
+    --good:#63CC7F;
+    --good-wash:#1E3320;
+    --warn:#E2A83F;
+    --warn-wash:#372B14;
+    --danger:#E67667;
+    --danger-wash:#3A1E1A;
+    --focus:#B7E28C;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 32px -14px rgba(0,0,0,.55);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',ui-sans-serif,system-ui,sans-serif;
+    font-size:15px;
+    line-height:1.5;
+  }
+  h1,h2,h3{ font-family:'Fraunces',ui-serif,Georgia,serif; text-wrap:balance; margin:0; color:var(--ink); }
+  .mono{ font-family:'IBM Plex Mono',ui-monospace,monospace; font-variant-numeric:tabular-nums; }
+  a{ color:inherit; }
+
+  .wrap{ max-width:1180px; margin:0 auto; padding:36px 24px 80px; }
+
+  header.top{
+    display:flex; align-items:flex-end; justify-content:space-between; gap:24px;
+    padding-bottom:22px; margin-bottom:26px; border-bottom:1px solid var(--border);
+  }
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .brand-mark{
+    width:40px; height:40px; border-radius:10px; background:var(--accent-wash);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    border:1px solid var(--border-soft);
+  }
+  .eyebrow{
+    font-size:11.5px; font-weight:600; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--accent-strong); margin:0 0 4px;
+  }
+  h1{ font-size:27px; font-weight:600; letter-spacing:-.01em; }
+  .top-sub{ color:var(--ink-soft); font-size:13.5px; max-width:340px; text-align:right; }
+
+  .board{ display:grid; grid-template-columns:minmax(0,1.05fr) minmax(0,1fr); gap:22px; align-items:start; }
+  @media (max-width:920px){ .board{ grid-template-columns:1fr; } }
+
+  .card{
+    background:var(--surface); border:1px solid var(--border-soft); border-radius:14px;
+    padding:20px 22px; box-shadow:var(--shadow);
+  }
+  .card + .card{ margin-top:16px; }
+  .card h2{ font-size:16.5px; font-weight:600; }
+  .card-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:14px; }
+  .card-tag{ font-size:11px; color:var(--ink-faint); font-weight:500; }
+
+  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+  .field-row.single{ grid-template-columns:1fr; }
+  .field{ display:flex; flex-direction:column; gap:5px; }
+  .field label{ font-size:12px; font-weight:600; color:var(--ink-soft); }
+  .field .hint{ font-size:11px; color:var(--ink-faint); margin-top:1px; }
+  input[type="number"], input[type="date"], select{
+    font:inherit; font-family:'IBM Plex Mono',ui-monospace,monospace; font-size:13.5px;
+    padding:9px 10px; border-radius:8px; border:1px solid var(--border);
+    background:var(--surface-2); color:var(--ink); width:100%;
+  }
+  select{ font-family:'Inter',ui-sans-serif,sans-serif; font-size:13.5px; }
+  input:focus-visible, select:focus-visible{ outline:2px solid var(--focus); outline-offset:1px; }
+  .unit-suffix{ position:relative; }
+  .unit-suffix span{ position:absolute; right:10px; top:9px; font-size:11.5px; color:var(--ink-faint); pointer-events:none; }
+
+  .divider{ height:1px; background:var(--border-soft); margin:16px 0; border:none; }
+
+  /* results */
+  .status-row{ display:flex; gap:18px; align-items:center; }
+  .gauge-wrap{ flex-shrink:0; }
+  .status-copy{ flex:1; min-width:0; }
+  .pill{
+    display:inline-flex; align-items:center; gap:6px; padding:4px 11px; border-radius:100px;
+    font-size:12px; font-weight:600; letter-spacing:.01em;
+  }
+  .pill .dot{ width:7px; height:7px; border-radius:50%; }
+  .status-copy p{ margin:8px 0 0; font-size:13px; color:var(--ink-soft); max-width:32ch; }
+
+  .stat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px; }
+  .stat{
+    background:var(--surface-2); border:1px solid var(--border-soft); border-radius:10px;
+    padding:12px 14px;
+  }
+  .stat .k{ font-size:11px; color:var(--ink-faint); font-weight:600; text-transform:uppercase; letter-spacing:.05em; }
+  .stat .v{ font-family:'IBM Plex Mono',monospace; font-size:19px; font-weight:600; margin-top:3px; font-variant-numeric:tabular-nums; }
+  .stat .v small{ font-size:12px; font-weight:500; color:var(--ink-soft); margin-left:3px; font-family:'Inter',sans-serif;}
+  .stat.accent{ background:var(--accent-wash); border-color:transparent; }
+  .stat.accent .v{ color:var(--accent-strong); }
+  .stat.brown{ background:var(--brown-wash); border-color:transparent; }
+  .stat.brown .v{ color:var(--brown); }
+
+  .alert{
+    display:flex; gap:10px; padding:11px 13px; border-radius:10px; font-size:13px;
+    align-items:flex-start; border:1px solid transparent;
+  }
+  .alert + .alert{ margin-top:8px; }
+  .alert .ico{ flex-shrink:0; margin-top:1px; }
+  .alert.danger{ background:var(--danger-wash); color:var(--danger); }
+  .alert.warn{ background:var(--warn-wash); color:var(--warn); }
+  .alert.good{ background:var(--good-wash); color:var(--good); }
+  .alert b{ color:inherit; }
+  .alert-body{ color:var(--ink); }
+  .alert-body b{ font-weight:600; }
+
+  .timeline{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:11px; }
+  .timeline li{ display:flex; gap:11px; font-size:13.3px; }
+  .timeline .tstep{
+    flex-shrink:0; width:22px; height:22px; border-radius:50%; background:var(--surface-2);
+    border:1px solid var(--border); display:flex; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:600; color:var(--ink-soft); margin-top:1px;
+  }
+  .timeline .tbody b{ color:var(--ink); }
+  .timeline .tbody span.sub{ display:block; color:var(--ink-soft); font-size:12.3px; margin-top:1px; }
+
+  .legend-row{ display:flex; gap:14px; flex-wrap:wrap; margin-top:12px; }
+  .legend-item{ display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--ink-soft); }
+  .legend-item i{ width:8px; height:8px; border-radius:2px; display:inline-block; }
+
+  /* history / save */
+  .history-card{ margin-top:16px; }
+  .save-row{ display:flex; gap:10px; align-items:flex-end; margin-bottom:6px; }
+  .save-row .field{ flex:1; }
+  input[type="text"]{
+    font:inherit; font-family:'Inter',ui-sans-serif,sans-serif; font-size:13.5px;
+    padding:9px 10px; border-radius:8px; border:1px solid var(--border);
+    background:var(--surface-2); color:var(--ink); width:100%;
+  }
+  .btn{
+    font-family:'Inter',ui-sans-serif,sans-serif; font-weight:600; font-size:13px;
+    padding:10px 16px; border-radius:8px; border:1px solid transparent;
+    background:var(--accent); color:#fff; cursor:pointer; white-space:nowrap; flex-shrink:0;
+  }
+  .btn:hover{ background:var(--accent-strong); }
+  .btn:disabled{ opacity:.45; cursor:not-allowed; }
+  .btn:focus-visible{ outline:2px solid var(--focus); outline-offset:2px; }
+  .db-status{ font-size:11.5px; color:var(--ink-faint); margin:2px 0 14px; }
+
+  .hist-row{
+    display:grid; grid-template-columns:18px 1fr auto auto auto auto; gap:12px; align-items:center;
+    padding:9px 4px; border-bottom:1px solid var(--border-soft); font-size:12.8px;
+  }
+  .hist-row:last-child{ border-bottom:none; }
+  .hist-check{ accent-color:var(--accent); width:15px; height:15px; }
+  .hist-label{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; color:var(--ink); }
+  .hist-date{ color:var(--ink-soft); font-size:12px; }
+  .hist-dose{ color:var(--ink-soft); font-size:12px; min-width:64px; text-align:right; }
+  .hist-del{
+    background:none; border:none; cursor:pointer; font-size:13px; color:var(--ink-faint);
+    padding:2px 4px; border-radius:6px; line-height:1;
+  }
+  .hist-del:hover{ color:var(--danger); background:var(--danger-wash); }
+  .hist-empty{ color:var(--ink-faint); font-size:13px; padding:10px 2px; }
+  .hist-hint{ font-size:11.5px; color:var(--ink-faint); margin-top:10px; }
+
+  @media (max-width:640px){
+    .hist-row{ grid-template-columns:18px 1fr auto auto; }
+    .hist-date{ display:none; }
+  }
+
+  /* dashboard */
+  .chart-block{ margin-top:20px; }
+  .chart-title{ font-family:'Inter',sans-serif; font-size:12.5px; font-weight:600; color:var(--ink); margin:0 0 8px; }
+  .chart-svg{ width:100%; height:auto; display:block; overflow:visible; }
+  .bar-g{ cursor:pointer; }
+  .table-wrap{ overflow-x:auto; margin-top:22px; border-top:1px solid var(--border-soft); padding-top:14px; }
+  table.dash-table{ width:100%; border-collapse:collapse; font-size:12.5px; }
+  .dash-table th{
+    text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em;
+    color:var(--ink-faint); font-weight:600; padding:0 10px 8px 0; white-space:nowrap;
+  }
+  .dash-table td{ padding:8px 10px 8px 0; border-top:1px solid var(--border-soft); white-space:nowrap; }
+  .dash-table td:first-child, .dash-table th:first-child{ padding-left:0; }
+  .chart-tip{
+    position:fixed; pointer-events:none; background:var(--ink); color:var(--bg);
+    font-size:11.5px; padding:5px 9px; border-radius:6px; z-index:80; display:none;
+    white-space:nowrap; font-family:'Inter',sans-serif; box-shadow:var(--shadow);
+  }
+
+  footer.foot{
+    margin-top:30px; padding-top:16px; border-top:1px solid var(--border);
+    font-size:11.5px; color:var(--ink-faint); display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap;
+  }
+  footer.foot b{ color:var(--ink-soft); }
+</style>
+
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M4 20c3-7 6-9 8-14 2 5 5 7 8 14" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4 20h16" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round"/>
+          <circle cx="12" cy="7.2" r="1.4" fill="var(--accent)"/>
+        </svg>
+      </div>
+      <div>
+        <p class="eyebrow">IDR · Bacia leiteira de Santa Helena</p>
+        <h1>Dose Certa de Dejetos</h1>
+      </div>
+    </div>
+    <p class="top-sub">Cruza o laudo de solo com o padrão nutricional do dejeto bovino e indica quanto aplicar, sem passar do limite de fósforo.</p>
+  </header>
+
+  <div class="board">
+
+    <!-- LEFT: INPUTS -->
+    <div>
+      <div class="card">
+        <div class="card-head">
+          <h2>1 · Laudo do solo</h2>
+          <span class="card-tag">por talhão / potreiro</span>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="pSolo">Fósforo do solo (P — Mehlich-1)</label>
+            <div class="unit-suffix">
+              <input type="number" id="pSolo" value="7.4" step="0.1" min="0">
+              <span>mg/dm³</span>
+            </div>
+          </div>
+          <div class="field">
+            <label for="textura">Textura do solo</label>
+            <select id="textura">
+              <option value="arenoso">Arenosa (&lt;20% argila)</option>
+              <option value="media" selected>Média (20–40% argila)</option>
+              <option value="argilosa">Argilosa (40–60% argila)</option>
+              <option value="muitoArgilosa">Muito argilosa (&gt;60% argila)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="dataLaudo">Data do último laudo</label>
+            <input type="date" id="dataLaudo" value="2025-03-10">
+          </div>
+          <div class="field">
+            <label for="distAgua">Distância até curso d'água</label>
+            <div class="unit-suffix">
+              <input type="number" id="distAgua" value="45" step="1" min="0">
+              <span>metros</span>
+            </div>
+          </div>
+        </div>
+        <p class="hint">O laudo (exigido a cada ~2 anos para financiamento) traz o teor de P do extrator Mehlich-1 e o % de argila — copie os dois valores de lá.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>2 · Área e cultura</h2>
+          <span class="card-tag">o que vai ser plantado</span>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="cultura">Cultura</label>
+            <select id="cultura">
+              <option value="pastagem">Pastagem perene</option>
+              <option value="milho">Milho</option>
+              <option value="soja">Soja</option>
+              <option value="trigo">Trigo</option>
+              <option value="feijao">Feijão</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="area">Área do talhão</label>
+            <div class="unit-suffix">
+              <input type="number" id="area" value="6" step="0.1" min="0.1">
+              <span>ha</span>
+            </div>
+          </div>
+        </div>
+        <div class="field-row single">
+          <div class="field">
+            <label for="declive">Declividade da área</label>
+            <select id="declive">
+              <option value="plano">Plano / suave-ondulado (0–3%)</option>
+              <option value="ondulado" selected>Ondulado (3–8%)</option>
+              <option value="forte">Forte-ondulado / pé de morro (&gt;8%)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>3 · Padrão do dejeto disponível</h2>
+          <span class="card-tag">ajuste com a análise da esterqueira, se tiver</span>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="tipoDejeto">Tipo de dejeto</label>
+            <select id="tipoDejeto">
+              <option value="liquido" selected>Dejeto líquido (esterqueira)</option>
+              <option value="solido">Esterco sólido curtido</option>
+              <option value="cama">Cama sobreposta compostada</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="teorP2O5">Teor de P₂O₅ do dejeto</label>
+            <div class="unit-suffix">
+              <input type="number" id="teorP2O5" value="0.5" step="0.05" min="0">
+              <span id="teorUnit">kg/m³</span>
+            </div>
+          </div>
+        </div>
+        <div class="field-row single">
+          <div class="field">
+            <label for="disponivel">Volume de dejeto disponível para esta área <span style="font-weight:400;color:var(--ink-faint)">(opcional)</span></label>
+            <div class="unit-suffix">
+              <input type="number" id="disponivel" value="" step="1" min="0" placeholder="deixe em branco se ainda não sabe">
+              <span id="dispUnit">m³</span>
+            </div>
+          </div>
+        </div>
+        <p class="hint">Os valores padrão (0,5 kg P₂O₅/m³ líquido · 4 kg/t sólido · 3 kg/t cama) são médias de referência para dejeto bovino de leite — troque pelo valor do seu laudo de esterqueira quando existir.</p>
+      </div>
+    </div>
+
+    <!-- RIGHT: RESULTS -->
+    <div>
+      <div class="card">
+        <div class="card-head">
+          <h2>Situação do fósforo no solo</h2>
+          <span class="card-tag mono" id="pReadout">7,4 mg/dm³</span>
+        </div>
+        <div class="status-row">
+          <div class="gauge-wrap">
+            <svg id="gaugeSvg" width="128" height="82" viewBox="0 0 128 82"></svg>
+          </div>
+          <div class="status-copy">
+            <span class="pill" id="statusPill"><span class="dot"></span><span id="statusLabel">médio</span></span>
+            <p id="statusExplain">O solo ainda tem margem para receber fósforo orgânico antes do limite crítico para esta textura.</p>
+          </div>
+        </div>
+        <div class="legend-row">
+          <span class="legend-item"><i style="background:var(--good)"></i>baixo / médio</span>
+          <span class="legend-item"><i style="background:var(--warn)"></i>alto</span>
+          <span class="legend-item"><i style="background:var(--danger)"></i>muito alto — risco de toxidez</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Dose recomendada</h2>
+          <span class="card-tag">talhão de <span class="mono" id="areaReadout">6</span> ha</span>
+        </div>
+        <div class="stat-grid">
+          <div class="stat accent">
+            <div class="k">P₂O₅ liberado</div>
+            <div class="v" id="doseP2O5">45<small>kg/ha</small></div>
+          </div>
+          <div class="stat brown">
+            <div class="k">Dejeto por hectare</div>
+            <div class="v" id="doseManureHa">90<small id="doseManureHaUnit">m³/ha</small></div>
+          </div>
+          <div class="stat accent">
+            <div class="k">Total no talhão</div>
+            <div class="v" id="doseManureTotal">540<small id="doseManureTotalUnit">m³</small></div>
+          </div>
+          <div class="stat brown">
+            <div class="k">Ajuste por declividade</div>
+            <div class="v" id="slopeAdjust">−15<small>%</small></div>
+          </div>
+        </div>
+        <div id="complementBox"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Alertas</h2>
+        </div>
+        <div id="alertsBox"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Quando e como aplicar</h2>
+        </div>
+        <ul class="timeline" id="timelineBox"></ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card history-card">
+    <div class="card-head">
+      <h2>Histórico de registros</h2>
+      <span class="card-tag" id="histCount">0 salvos</span>
+    </div>
+    <div class="save-row">
+      <div class="field">
+        <label for="labelInput">Nome deste registro</label>
+        <input type="text" id="labelInput" placeholder="ex.: Talhão 3 — safra 2026/1">
+      </div>
+      <button class="btn" id="btnSave" disabled>💾 Salvar registro atual</button>
+    </div>
+    <p class="db-status" id="dbStatus">Verificando armazenamento…</p>
+    <div id="historyList"></div>
+    <p class="hist-hint">Os 3 registros mais recentes já entram no dashboard comparativo abaixo automaticamente — marque ou desmarque linhas para trocar quem aparece (dá para colocar quantos períodos ou talhões quiser lado a lado).</p>
+  </div>
+
+  <div class="card history-card" id="dashboardCard">
+    <div class="card-head">
+      <h2>Dashboard comparativo</h2>
+      <span class="card-tag" id="dashSelCount">0 selecionados</span>
+    </div>
+    <p class="hist-empty" id="dashEmpty">Selecione um ou mais registros na lista acima para montar o dashboard.</p>
+    <div id="dashboardContent" hidden>
+      <div class="legend-row">
+        <span class="legend-item"><i style="background:var(--good)"></i>baixo / médio</span>
+        <span class="legend-item"><i style="background:var(--warn)"></i>alto</span>
+        <span class="legend-item"><i style="background:var(--danger)"></i>muito alto</span>
+      </div>
+      <div class="chart-block">
+        <h3 class="chart-title">Fósforo do solo — % do limite crítico da textura</h3>
+        <svg id="chartP" class="chart-svg" viewBox="0 0 640 260" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Comparação do fósforo do solo entre registros selecionados"></svg>
+      </div>
+      <div class="chart-block">
+        <h3 class="chart-title">Dose de P₂O₅ recomendada (kg/ha)</h3>
+        <svg id="chartDose" class="chart-svg" viewBox="0 0 640 260" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Comparação da dose recomendada entre registros selecionados"></svg>
+      </div>
+      <div class="table-wrap">
+        <table class="dash-table">
+          <thead>
+            <tr>
+              <th>Registro</th><th>Laudo</th><th>Salvo em</th><th>P (mg/dm³)</th><th>Textura</th>
+              <th>Nível</th><th>Dose (kg/ha)</th><th>Dejeto total</th>
+            </tr>
+          </thead>
+          <tbody id="dashTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="chart-tip" id="chartTip"></div>
+
+  <footer class="foot">
+    <span><b>IDR · Desafio 2 — Hackyara</b> · protótipo de cálculo agronômico, não substitui a recomendação de um engenheiro agrônomo.</span>
+    <span>Faixas de P por textura conforme tabelas de referência (Mehlich-1) usadas na extensão rural da bacia leiteira.</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var CLAY = {
+    arenoso:      { label:"arenosa",        bounds:[3,   6,  12, 24] },
+    media:        { label:"média",          bounds:[2.5, 5,   9, 18] },
+    argilosa:     { label:"argilosa",       bounds:[2,   4,   8, 16] },
+    muitoArgilosa:{ label:"muito argilosa", bounds:[1.5, 3,   6, 12] }
+  };
+  var LEVELS = ["muito baixo","baixo","médio","alto","muito alto"];
+  var LEVEL_FACTOR = [1.6, 1.3, 1.0, 0.5, 0];
+  var LEVEL_COLOR_VAR = ["good","good","good","warn","danger"];
+
+  var CROPS = {
+    pastagem:{ label:"pastagem perene", demand:50 },
+    milho:{ label:"milho", demand:90 },
+    soja:{ label:"soja", demand:80 },
+    trigo:{ label:"trigo", demand:70 },
+    feijao:{ label:"feijão", demand:70 }
+  };
+
+  var MANURE = {
+    liquido:{ label:"dejeto líquido", unit:"m³", defaultP2O5:0.5 },
+    solido:{ label:"esterco sólido curtido", unit:"t", defaultP2O5:4.0 },
+    cama:{ label:"cama sobreposta compostada", unit:"t", defaultP2O5:3.0 }
+  };
+
+  var SLOPE = {
+    plano:{ label:"plano/suave-ondulado", factor:1.0, pct:0 },
+    ondulado:{ label:"ondulado", factor:0.85, pct:15 },
+    forte:{ label:"forte-ondulado / pé de morro", factor:0.6, pct:40 }
+  };
+
+  var $ = function(id){ return document.getElementById(id); };
+  var fmt = function(n, d){
+    if(d===undefined) d = 0;
+    return n.toLocaleString('pt-BR', {minimumFractionDigits:d, maximumFractionDigits:d});
+  };
+
+  var els = {
+    pSolo: $("pSolo"), textura: $("textura"), dataLaudo: $("dataLaudo"), distAgua: $("distAgua"),
+    cultura: $("cultura"), area: $("area"), declive: $("declive"),
+    tipoDejeto: $("tipoDejeto"), teorP2O5: $("teorP2O5"), teorUnit: $("teorUnit"),
+    disponivel: $("disponivel"), dispUnit: $("dispUnit")
+  };
+
+  var lastResult = {};
+  var recordsCol = null;
+  var records = [];
+  var selectedIds = [];
+  var useLocal = false;
+  var STORAGE_KEY = "doseCertaDejetos.registros.v1";
+
+  function loadLocalRecords(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      var list = raw ? JSON.parse(raw) : [];
+      list.sort(function(a,b){ return new Date(b.savedAt) - new Date(a.savedAt); });
+      return list;
+    }catch(e){ return []; }
+  }
+  function saveLocalRecords(list){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); return true; }
+    catch(e){ return false; }
+  }
+  function makeLocalId(){
+    return "local-" + Date.now() + "-" + Math.random().toString(36).slice(2,8);
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  function levelIndex(p, bounds){
+    for(var i=0;i<bounds.length;i++){ if(p<=bounds[i]) return i; }
+    return 4;
+  }
+
+  function drawGauge(fracRaw, colorVar){
+    var frac = Math.max(0, Math.min(1, fracRaw));
+    var cx=64, cy=72, r=54;
+    var a0 = Math.PI, a1 = Math.PI - Math.PI*frac;
+    var trackColor = getComputedStyle(document.documentElement).getPropertyValue('--border').trim();
+    var needleColor = getComputedStyle(document.documentElement).getPropertyValue('--'+colorVar).trim();
+    function pt(a){ return [cx + r*Math.cos(a), cy - r*Math.sin(a)]; }
+    var p0 = pt(Math.PI), p1 = pt(0);
+    var pStart = pt(a0), pEnd = pt(a1);
+    var largeArc = frac > 0.5 ? 1 : 0;
+    var svg = document.getElementById('gaugeSvg');
+    svg.innerHTML =
+      '<path d="M '+p0[0]+' '+p0[1]+' A '+r+' '+r+' 0 1 1 '+p1[0]+' '+p1[1]+'" fill="none" stroke="'+trackColor+'" stroke-width="10" stroke-linecap="round"/>' +
+      '<path d="M '+pStart[0]+' '+pStart[1]+' A '+r+' '+r+' 0 '+largeArc+' 1 '+pEnd[0]+' '+pEnd[1]+'" fill="none" stroke="'+needleColor+'" stroke-width="10" stroke-linecap="round"/>' +
+      '<circle cx="'+cx+'" cy="'+cy+'" r="3.5" fill="'+needleColor+'"/>';
+  }
+
+  function nextTestDate(dateStr){
+    var d = dateStr ? parseDate(dateStr) : null;
+    if(!d || isNaN(d.getTime())) return null;
+    var next = new Date(d.getTime());
+    next.setFullYear(next.getFullYear()+2);
+    return next;
+  }
+
+  function fmtDate(d){
+    return d.toLocaleDateString('pt-BR', {day:'2-digit', month:'short', year:'numeric'});
+  }
+
+  function updateManureUI(){
+    var m = MANURE[els.tipoDejeto.value];
+    els.teorP2O5.value = m.defaultP2O5;
+    els.teorUnit.textContent = "kg/" + m.unit;
+    els.dispUnit.textContent = m.unit;
+  }
+
+  function alertRow(kind, icon, html){
+    return '<div class="alert '+kind+'"><span class="ico">'+icon+'</span><span class="alert-body">'+html+'</span></div>';
+  }
+  var ICON = {
+    danger:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 3 1 21h22L12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 10v5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>',
+    warn:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9.2" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.5v5.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="16.3" r="1" fill="currentColor"/></svg>',
+    good:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9.2" stroke="currentColor" stroke-width="1.8"/><path d="M8 12.3l2.6 2.6 5.4-5.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+  };
+
+  function recalc(){
+    var p = parseFloat(els.pSolo.value) || 0;
+    var clay = CLAY[els.textura.value];
+    var idx = levelIndex(p, clay.bounds);
+    var level = LEVELS[idx];
+    var colorVar = LEVEL_COLOR_VAR[idx];
+    var factor = LEVEL_FACTOR[idx];
+
+    var crop = CROPS[els.cultura.value];
+    var area = Math.max(0, parseFloat(els.area.value) || 0);
+    var slope = SLOPE[els.declive.value];
+    var manure = MANURE[els.tipoDejeto.value];
+    var teor = Math.max(0.0001, parseFloat(els.teorP2O5.value) || manure.defaultP2O5);
+
+    var doseP2O5Ha = crop.demand * factor * slope.factor;
+    var doseManureHa = doseP2O5Ha / teor;
+    var doseManureTotal = doseManureHa * area;
+
+    // readouts
+    $("pReadout").textContent = fmt(p,1).replace('.',',') + " mg/dm³ · textura " + clay.label;
+    $("areaReadout").textContent = fmt(area,1);
+    $("doseP2O5").innerHTML = fmt(doseP2O5Ha,0) + "<small>kg/ha</small>";
+    $("doseManureHa").innerHTML = fmt(doseManureHa,1) + "<small>" + manure.unit + "/ha</small>";
+    $("doseManureTotal").innerHTML = fmt(doseManureTotal,0) + "<small>" + manure.unit + "</small>";
+    $("slopeAdjust").innerHTML = (slope.pct>0 ? "−"+slope.pct : "0") + "<small>%</small>";
+
+    // gauge: fraction relative to the "alto" ceiling (start of muito alto)
+    var ceiling = clay.bounds[3];
+    var frac = ceiling>0 ? p/ceiling : 0;
+    drawGauge(Math.min(frac,1), colorVar);
+
+    var pill = $("statusPill");
+    pill.style.background = "var(--"+colorVar+"-wash)";
+    pill.style.color = "var(--"+colorVar+")";
+    pill.querySelector('.dot').style.background = "var(--"+colorVar+")";
+    $("statusLabel").textContent = level + " em P (" + clay.label + ")";
+
+    var explainMap = {
+      "muito baixo":"O solo está bem abaixo do limite — há folga grande para aplicar dejeto, inclusive em dose reforçada.",
+      "baixo":"Ainda há bastante margem de P no solo para receber dejeto orgânico com segurança.",
+      "médio":"O solo ainda tem margem para receber fósforo orgânico antes do limite crítico para esta textura.",
+      "alto":"O solo já está próximo do limite — a dose de dejeto deve ser reduzida e monitorada de perto.",
+      "muito alto":"O solo já ultrapassou o limite seguro de P para esta textura — aplicar mais dejeto agora arrisca contaminar a área."
+    };
+    $("statusExplain").textContent = explainMap[level];
+
+    // complement / leftover box
+    var disponivelRaw = els.disponivel.value;
+    var complementHtml = "";
+    if(disponivelRaw !== ""){
+      var disponivel = Math.max(0, parseFloat(disponivelRaw) || 0);
+      var diff = doseManureTotal - disponivel;
+      if(Math.abs(diff) < 0.05*Math.max(doseManureTotal,1)){
+        complementHtml = '<div class="alert good" style="margin-top:12px">'+ICON.good+'<span class="alert-body">O volume disponível (<b>'+fmt(disponivel,0)+' '+manure.unit+'</b>) bate com a dose recomendada — pode aplicar tudo.</span></div>';
+      } else if(diff > 0){
+        var faltaP2O5 = diff * teor;
+        var kgSuperfosfato = faltaP2O5 / 0.18; // superfosfato simples ~18% P2O5
+        complementHtml = '<div class="alert warn" style="margin-top:12px">'+ICON.warn+'<span class="alert-body">Faltam <b>'+fmt(diff,0)+' '+manure.unit+'</b> de dejeto para fechar a dose. Complemento em adubo químico: cerca de <b>'+fmt(kgSuperfosfato,0)+' kg</b> de superfosfato simples (18% P₂O₅) para o talhão.</span></div>';
+      } else {
+        complementHtml = '<div class="alert danger" style="margin-top:12px">'+ICON.danger+'<span class="alert-body">O volume disponível excede a dose segura em <b>'+fmt(-diff,0)+' '+manure.unit+'</b>. Não aplique o excedente nesta área — direcione a outro talhão com P mais baixo ou guarde na esterqueira.</span></div>';
+      }
+    }
+    $("complementBox").innerHTML = complementHtml;
+
+    // alerts
+    var alerts = [];
+    if(idx === 4){
+      alerts.push(alertRow('danger', ICON.danger, '<b>Fósforo muito alto:</b> suspenda toda adubação fosfatada (orgânica e química) nesta área até o próximo laudo, sob risco de contaminação por saturação de P.'));
+    } else if(idx === 3){
+      alerts.push(alertRow('warn', ICON.warn, '<b>Fósforo alto:</b> dose já reduzida a 50% do padrão da cultura — reteste em até 12 meses antes de aplicar de novo.'));
+    }
+    if(els.declive.value === 'forte'){
+      alerts.push(alertRow('warn', ICON.warn, '<b>Pé de morro:</b> divida a dose em pelo menos 2 aplicações e incorpore ao solo em até 24–48h para reduzir o risco de escoamento.'));
+    }
+    var dist = parseFloat(els.distAgua.value);
+    if(!isNaN(dist) && dist < 30){
+      alerts.push(alertRow('danger', ICON.danger, '<b>Faixa de proteção:</b> a área está a apenas '+fmt(dist,0)+' m de um curso d’água — mantenha ao menos 30 m sem aplicação de dejeto.'));
+    } else if(!isNaN(dist) && dist < 50 && els.declive.value !== 'plano'){
+      alerts.push(alertRow('warn', ICON.warn, '<b>Atenção ao curso d’água:</b> a '+fmt(dist,0)+' m de distância, em terreno com declive, prefira aplicar na faixa mais afastada do talhão.'));
+    }
+    var next = nextTestDate(els.dataLaudo.value);
+    if(next){
+      var today = new Date();
+      var monthsLeft = (next - today) / (1000*60*60*24*30.4);
+      if(monthsLeft < 0){
+        alerts.push(alertRow('warn', ICON.warn, '<b>Laudo vencido:</b> o prazo de 2 anos já passou (venceria em '+fmtDate(next)+') — os valores de P podem não refletir mais o solo atual.'));
+      } else if(monthsLeft < 3){
+        alerts.push(alertRow('warn', ICON.warn, '<b>Reteste próximo:</b> renove o laudo de solo até '+fmtDate(next)+'.'));
+      }
+    }
+    if(alerts.length === 0){
+      alerts.push(alertRow('good', ICON.good, 'Nenhum alerta crítico para os dados informados — siga a dose recomendada e reteste o solo periodicamente.'));
+    }
+    $("alertsBox").innerHTML = alerts.join('');
+
+    // timeline
+    var steps = [];
+    steps.push(['1', 'Confirme a dose com o laudo em mãos', 'Compare o P do laudo (' + fmt(p,1).replace('.',',') + ' mg/dm³) com a faixa "'+level+'" antes de calibrar o distribuidor.']);
+    if(idx < 4){
+      steps.push(['2', 'Aplique 15–30 dias antes do plantio/semeadura de '+crop.label, 'Dá tempo do dejeto mineralizar e o P ficar disponível na fase de maior demanda da cultura.']);
+      steps.push(['3', 'Evite chuva forte prevista nas 48h seguintes', 'Reduz o escoamento superficial, principalmente em terreno ' + slope.label + '.']);
+    } else {
+      steps.push(['2', 'Não aplique dejeto nesta área neste ciclo', 'Priorize talhões com P baixo/médio; volte a considerar esta área só após novo laudo mostrar queda no teor.']);
+    }
+    steps.push([String(steps.length+1), 'Reteste o solo em até 2 anos', next ? ('Próximo laudo recomendado até ' + fmtDate(next) + '.') : 'Informe a data do último laudo acima para ver o prazo.']);
+
+    $("timelineBox").innerHTML = steps.map(function(s){
+      return '<li><span class="tstep">'+s[0]+'</span><span class="tbody"><b>'+s[1]+'</b><span class="sub">'+s[2]+'</span></span></li>';
+    }).join('');
+
+    lastResult = {
+      level: level,
+      doseP2O5Ha: doseP2O5Ha,
+      doseManureHa: doseManureHa,
+      doseManureTotal: doseManureTotal,
+      manureUnit: manure.unit,
+      cropLabel: crop.label,
+      clayLabel: clay.label,
+      slopeLabel: slope.label
+    };
+  }
+
+  // ---- histórico / comparação (capability "db") ----
+
+  // "2025-03-10" é interpretado como UTC pelo Date(); força leitura no fuso local
+  function parseDate(v){
+    if(typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v)){
+      var p = v.split("-");
+      return new Date(+p[0], +p[1]-1, +p[2]);
+    }
+    return new Date(v);
+  }
+
+  function fmtRecordDate(iso){
+    var d = parseDate(iso);
+    if(isNaN(d.getTime())) return "";
+    return d.toLocaleDateString('pt-BR', {day:'2-digit', month:'short', year:'numeric'});
+  }
+
+  function setDbStatus(text){ $("dbStatus").textContent = text; }
+
+  var userTouchedSelection = false;
+
+  function renderHistory(){
+    $("histCount").textContent = records.length + (records.length===1 ? " salvo" : " salvos");
+
+    // enquanto o usuário não mexer manualmente na seleção, o dashboard segue
+    // sempre mostrando os registros mais recentes — sem exigir marcar caixinhas
+    if(!userTouchedSelection && records.length > 0){
+      selectedIds = records.slice(0, Math.min(3, records.length)).map(function(r){ return r.id; });
+    }
+
+    if(records.length === 0){
+      $("historyList").innerHTML = '<div class="hist-empty">Nenhum registro salvo ainda — dê um nome acima e clique em "Salvar registro atual" para começar a comparar entre laudos.</div>';
+      selectedIds = [];
+      renderDashboard();
+      return;
+    }
+
+    $("historyList").innerHTML = records.map(function(r){
+      var res = r.result || {};
+      var inp = r.input || {};
+      var idx = LEVELS.indexOf(res.level);
+      var colorVar = idx>=0 ? LEVEL_COLOR_VAR[idx] : "good";
+      var checked = selectedIds.indexOf(r.id) !== -1 ? "checked" : "";
+      var doseTxt = (typeof res.doseP2O5Ha === "number") ? fmt(res.doseP2O5Ha,0) + " kg/ha" : "—";
+      return '<div class="hist-row">' +
+        '<input type="checkbox" class="hist-check" data-id="'+r.id+'" '+checked+' aria-label="Selecionar para comparar">' +
+        '<span class="hist-label" title="'+escapeHtml(r.label||"")+'">'+escapeHtml(r.label || "Sem nome")+'</span>' +
+        '<span class="mono hist-date">'+fmtRecordDate(r.savedAt)+'</span>' +
+        '<span class="pill" style="background:var(--'+colorVar+'-wash);color:var(--'+colorVar+')"><span class="dot" style="background:var(--'+colorVar+')"></span>'+(res.level||"—")+'</span>' +
+        '<span class="mono hist-dose">'+doseTxt+'</span>' +
+        '<button type="button" class="hist-del" data-id="'+r.id+'" aria-label="Excluir registro" title="Excluir registro">🗑</button>' +
+      '</div>';
+    }).join('');
+
+    Array.prototype.forEach.call(document.querySelectorAll('.hist-check'), function(cb){
+      cb.addEventListener('change', function(){
+        userTouchedSelection = true;
+        var id = cb.getAttribute('data-id');
+        var pos = selectedIds.indexOf(id);
+        if(cb.checked){
+          if(pos === -1){
+            if(selectedIds.length >= MAX_SELECT) selectedIds.shift();
+            selectedIds.push(id);
+          }
+        } else if(pos !== -1){
+          selectedIds.splice(pos,1);
+        }
+        // sincroniza os checkboxes (o limite pode ter soltado o mais antigo)
+        Array.prototype.forEach.call(document.querySelectorAll('.hist-check'), function(other){
+          other.checked = selectedIds.indexOf(other.getAttribute('data-id')) !== -1;
+        });
+        renderDashboard();
+      });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('.hist-del'), function(btn){
+      btn.addEventListener('click', function(){
+        var id = btn.getAttribute('data-id');
+        var pos = selectedIds.indexOf(id);
+        if(pos !== -1) selectedIds.splice(pos,1);
+        if(recordsCol){
+          recordsCol.doc(id).delete().catch(function(){
+            setDbStatus('Não foi possível excluir este registro agora — tente de novo.');
+          });
+        } else if(useLocal){
+          records = records.filter(function(r){ return r.id !== id; });
+          saveLocalRecords(records);
+          renderHistory();
+        }
+      });
+    });
+
+    renderDashboard();
+  }
+
+  // ---- gráficos do dashboard (barras SVG desenhadas à mão) ----
+
+  var MAX_SELECT = 8;
+  var chartTip = null;
+
+  function truncateLabel(s){
+    s = s || "Sem nome";
+    return s.length > 16 ? s.slice(0,15) + "…" : s;
+  }
+
+  // data curta do laudo (o período que o registro representa), com queda para a data de salvamento
+  function periodLabel(rec){
+    var inp = rec.input || {};
+    var d = inp.dataLaudo ? parseDate(inp.dataLaudo) : parseDate(rec.savedAt);
+    if(isNaN(d.getTime())) return "";
+    return d.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit', year:'2-digit'});
+  }
+
+  function showTip(text, evt){
+    if(!chartTip) chartTip = $("chartTip");
+    chartTip.textContent = text;
+    chartTip.style.display = "block";
+    moveTip(evt);
+  }
+  function moveTip(evt){
+    if(!chartTip) return;
+    chartTip.style.left = (evt.clientX + 14) + "px";
+    chartTip.style.top = (evt.clientY + 14) + "px";
+  }
+  function hideTip(){
+    if(!chartTip) return;
+    chartTip.style.display = "none";
+  }
+
+  function renderBarChart(svg, items, opts){
+    opts = opts || {};
+    var W = 640, H = 268;
+    var padL = 42, padR = 14, padT = 20, padB = 48;
+    var plotW = W - padL - padR, plotH = H - padT - padB;
+    var n = Math.max(items.length, 1);
+
+    var rawMax = Math.max.apply(null, items.map(function(d){ return d.value; }).concat([opts.refLine ? opts.refLine.value : 0, 0]));
+    var maxVal = (opts.yMax !== undefined ? opts.yMax : rawMax) || 1;
+    maxVal = Math.max(maxVal, 1) * 1.18;
+
+    var barSlot = plotW / n;
+    var barW = Math.max(10, Math.min(58, barSlot * 0.56));
+
+    function yFor(v){ return padT + plotH - (v / maxVal) * plotH; }
+
+    var gridCount = 4, gridSvg = "", tickSvg = "";
+    for(var g=0; g<=gridCount; g++){
+      var val = maxVal / 1.18 <= 0 ? 0 : (maxVal * g / gridCount);
+      var y = yFor(val);
+      gridSvg += '<line x1="'+padL+'" x2="'+(W-padR)+'" y1="'+y+'" y2="'+y+'" stroke="var(--border-soft)" stroke-width="1"/>';
+      tickSvg += '<text x="'+(padL-8)+'" y="'+(y+3.5)+'" text-anchor="end" font-size="9.5" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">'+Math.round(val)+(opts.yUnit||'')+'</text>';
+    }
+
+    var barsSvg = "", labelsSvg = "";
+    items.forEach(function(d, i){
+      var cx = padL + barSlot*i + barSlot/2;
+      var x = cx - barW/2;
+      var y = yFor(d.value);
+      var h = (padT + plotH) - y;
+      barsSvg += '<g class="bar-g" data-tip="'+escapeHtml(d.tip || (d.label+': '+d.valueLabel))+'">' +
+          '<rect x="'+x.toFixed(1)+'" y="'+padT+'" width="'+barW.toFixed(1)+'" height="'+plotH+'" fill="transparent"/>' +
+          '<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+barW.toFixed(1)+'" height="'+Math.max(h,1).toFixed(1)+'" rx="4" fill="'+d.color+'"/>' +
+          '<text x="'+cx.toFixed(1)+'" y="'+(y-7).toFixed(1)+'" text-anchor="middle" font-size="10.5" font-weight="600" fill="var(--ink)" font-family="IBM Plex Mono, monospace">'+escapeHtml(d.valueLabel)+'</text>' +
+        '</g>';
+      labelsSvg += '<text x="'+cx.toFixed(1)+'" y="'+(H-padB+16)+'" text-anchor="middle" font-size="9.5" fill="var(--ink-soft)">'+escapeHtml(truncateLabel(d.label))+'</text>';
+      if(d.sub){
+        labelsSvg += '<text x="'+cx.toFixed(1)+'" y="'+(H-padB+29)+'" text-anchor="middle" font-size="9" fill="var(--ink-faint)" font-family="IBM Plex Mono, monospace">'+escapeHtml(d.sub)+'</text>';
+      }
+    });
+
+    var refSvg = "";
+    if(opts.refLine){
+      var ry = yFor(opts.refLine.value);
+      refSvg = '<line x1="'+padL+'" x2="'+(W-padR)+'" y1="'+ry.toFixed(1)+'" y2="'+ry.toFixed(1)+'" stroke="var(--danger)" stroke-width="1.4" stroke-dasharray="4 3"/>' +
+        '<text x="'+(W-padR)+'" y="'+(ry-5).toFixed(1)+'" text-anchor="end" font-size="9.5" font-weight="600" fill="var(--danger)">'+escapeHtml(opts.refLine.label)+'</text>';
+    }
+
+    svg.innerHTML =
+      '<line x1="'+padL+'" x2="'+padL+'" y1="'+padT+'" y2="'+(padT+plotH)+'" stroke="var(--border)" stroke-width="1"/>' +
+      '<line x1="'+padL+'" x2="'+(W-padR)+'" y1="'+(padT+plotH)+'" y2="'+(padT+plotH)+'" stroke="var(--border)" stroke-width="1"/>' +
+      gridSvg + tickSvg + refSvg + barsSvg + labelsSvg;
+
+    Array.prototype.forEach.call(svg.querySelectorAll('.bar-g'), function(g){
+      g.addEventListener('mouseenter', function(e){ showTip(g.getAttribute('data-tip'), e); });
+      g.addEventListener('mousemove', moveTip);
+      g.addEventListener('mouseleave', hideTip);
+    });
+  }
+
+  function renderDashboard(){
+    $("dashSelCount").textContent = selectedIds.length + (selectedIds.length===1 ? " selecionado" : " selecionados");
+
+    if(selectedIds.length === 0){
+      $("dashEmpty").hidden = false;
+      $("dashboardContent").hidden = true;
+      return;
+    }
+    $("dashEmpty").hidden = true;
+    $("dashboardContent").hidden = false;
+
+    var chosen = selectedIds
+      .map(function(id){ return records.filter(function(r){ return r.id === id; })[0]; })
+      .filter(Boolean)
+      .sort(function(a,b){ return new Date(a.savedAt) - new Date(b.savedAt); });
+
+    var chartPItems = chosen.map(function(r){
+      var inp = r.input || {}, res = r.result || {};
+      var clay = CLAY[inp.textura] || CLAY.media;
+      var ceiling = clay.bounds[3];
+      var pct = ceiling > 0 ? (inp.pSolo / ceiling * 100) : 0;
+      var idx = LEVELS.indexOf(res.level);
+      var colorVar = idx >= 0 ? LEVEL_COLOR_VAR[idx] : "good";
+      return {
+        label: r.label,
+        sub: periodLabel(r),
+        value: pct,
+        valueLabel: fmt(pct,0) + "%",
+        color: "var(--"+colorVar+")",
+        tip: (r.label||"Registro") + " · " + fmtRecordDate(r.savedAt) + " — P " + (typeof inp.pSolo==='number'?fmt(inp.pSolo,1).replace('.',','):'—') + " mg/dm³ (" + (res.level||"—") + ")"
+      };
+    });
+    renderBarChart($("chartP"), chartPItems, { yUnit:"%", refLine:{ value:100, label:"limite (muito alto)" } });
+
+    var chartDoseItems = chosen.map(function(r){
+      var res = r.result || {};
+      var val = typeof res.doseP2O5Ha === "number" ? res.doseP2O5Ha : 0;
+      return {
+        label: r.label,
+        sub: periodLabel(r),
+        value: val,
+        valueLabel: fmt(val,0),
+        color: "var(--accent)",
+        tip: (r.label||"Registro") + " · " + fmtRecordDate(r.savedAt) + " — dose " + fmt(val,0) + " kg P₂O₅/ha"
+      };
+    });
+    renderBarChart($("chartDose"), chartDoseItems, { yUnit:" kg/ha" });
+
+    $("dashTableBody").innerHTML = chosen.map(function(r){
+      var inp = r.input || {}, res = r.result || {};
+      var clay = CLAY[inp.textura] || CLAY.media;
+      var idx = LEVELS.indexOf(res.level);
+      var colorVar = idx >= 0 ? LEVEL_COLOR_VAR[idx] : "good";
+      return '<tr>' +
+        '<td>'+escapeHtml(r.label||"Sem nome")+'</td>' +
+        '<td class="mono">'+ (inp.dataLaudo ? fmtRecordDate(inp.dataLaudo) : '—') +'</td>' +
+        '<td class="mono">'+fmtRecordDate(r.savedAt)+'</td>' +
+        '<td class="mono">'+ (typeof inp.pSolo==='number'? fmt(inp.pSolo,1).replace('.',',') : '—') +'</td>' +
+        '<td>'+clay.label+'</td>' +
+        '<td><span class="pill" style="background:var(--'+colorVar+'-wash);color:var(--'+colorVar+')">'+(res.level||"—")+'</span></td>' +
+        '<td class="mono">'+ (typeof res.doseP2O5Ha==='number'? fmt(res.doseP2O5Ha,0) : '—') +'</td>' +
+        '<td class="mono">'+ (typeof res.doseManureTotal==='number'? fmt(res.doseManureTotal,0)+' '+(res.manureUnit||'') : '—') +'</td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  function currentInputSnapshot(){
+    return {
+      pSolo: parseFloat(els.pSolo.value) || 0,
+      textura: els.textura.value,
+      dataLaudo: els.dataLaudo.value,
+      distAgua: parseFloat(els.distAgua.value) || null,
+      cultura: els.cultura.value,
+      area: parseFloat(els.area.value) || 0,
+      declive: els.declive.value,
+      tipoDejeto: els.tipoDejeto.value,
+      teorP2O5: parseFloat(els.teorP2O5.value) || 0,
+      disponivel: els.disponivel.value === "" ? null : parseFloat(els.disponivel.value)
+    };
+  }
+
+  function saveRecord(){
+    var btn = $("btnSave");
+    var label = $("labelInput").value.trim() || ("Registro " + fmtRecordDate(new Date().toISOString()));
+    var body = {
+      label: label,
+      savedAt: new Date().toISOString(),
+      input: currentInputSnapshot(),
+      result: lastResult
+    };
+
+    if(recordsCol){
+      btn.disabled = true;
+      var prevLabel = btn.textContent;
+      btn.textContent = "Salvando…";
+      recordsCol.add(body).then(function(){
+        $("labelInput").value = "";
+        setDbStatus("Registro salvo — visível para quem tiver acesso a esta página.");
+      }).catch(function(){
+        setDbStatus("Não foi possível salvar no banco compartilhado agora — verifique a conexão e tente de novo.");
+      }).then(function(){
+        btn.disabled = false;
+        btn.textContent = prevLabel;
+      });
+      return;
+    }
+
+    if(useLocal){
+      body.id = makeLocalId();
+      records.unshift(body);
+      if(saveLocalRecords(records)){
+        $("labelInput").value = "";
+        setDbStatus("Registro salvo neste navegador (modo local — veja a observação abaixo).");
+        renderHistory();
+      } else {
+        records.shift();
+        setDbStatus("Não foi possível salvar — o armazenamento deste navegador está indisponível ou cheio.");
+      }
+      return;
+    }
+
+    setDbStatus("Salvamento indisponível nesta visualização.");
+  }
+
+  function fallbackToLocal(message){
+    useLocal = true;
+    recordsCol = null;
+    records = loadLocalRecords();
+    $("btnSave").disabled = false;
+    setDbStatus(message + " Ativado o modo local: os registros ficam salvos neste navegador (não são compartilhados com a equipe nem sincronizam entre dispositivos).");
+    renderHistory();
+  }
+
+  function initHistory(){
+    if(!(window.claude && typeof window.claude.use === "function")){
+      fallbackToLocal("Este visualizador não expõe o banco de dados do artefato.");
+      return;
+    }
+    window.claude.use("db").then(function(db){
+      if(!db){
+        fallbackToLocal("O banco de dados compartilhado não está disponível aqui.");
+        return;
+      }
+      recordsCol = db.collection("registros");
+      $("btnSave").disabled = false;
+      setDbStatus("Registros ficam salvos nesta página e visíveis a quem tiver acesso a ela.");
+      recordsCol.orderBy("savedAt","desc").limit(200).onSnapshot(function(snap){
+        records = snap.docs.map(function(d){
+          var data = d.data() || {};
+          data.id = d.id;
+          return data;
+        });
+        renderHistory();
+      }, function(){
+        fallbackToLocal("A conexão com o banco compartilhado caiu.");
+      });
+    }).catch(function(){
+      fallbackToLocal("Não foi possível abrir o banco de dados compartilhado.");
+    });
+  }
+
+  $("btnSave").addEventListener("click", saveRecord);
+
+  ["pSolo","textura","dataLaudo","distAgua","cultura","area","declive","teorP2O5","disponivel"].forEach(function(id){
+    document.getElementById(id).addEventListener('input', recalc);
+  });
+  els.tipoDejeto.addEventListener('input', function(){ updateManureUI(); recalc(); });
+
+  updateManureUI();
+  recalc();
+  try { renderHistory(); } catch(e){ if(window.console) console.error(e); }
+  initHistory();
+})();
+</script>
